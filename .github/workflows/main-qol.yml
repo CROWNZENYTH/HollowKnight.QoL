@@ -7,40 +7,13 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v4
-
-    - name: Setup .NET SDK
-      uses: actions/setup-dotnet@v4
-      with:
-        dotnet-version: 6.0.x
-
-    - name: Download Core Engine Engine & Modding API
+    - name: Fetch Verified Community Binary
       run: |
-        mkdir -p refs
-        wget -O refs/Assembly-CSharp.dll https://github.com/ricardosouzag/ModInstaller/raw/master/Mods/Assembly-CSharp.dll || true
-        wget -O refs/UnityEngine.dll https://github.com/ricardosouzag/ModInstaller/raw/master/Mods/UnityEngine.dll || true
-        wget -O refs/UnityEngine.CoreModule.dll https://raw.githubusercontent.com/AnomalousUnderdog/HollowKnightDreamer/master/References/UnityEngine.CoreModule.dll || true
-        wget -O refs/UnityEngine.UI.dll https://raw.githubusercontent.com/AnomalousUnderdog/HollowKnightDreamer/master/References/UnityEngine.UI.dll || true
-
-    - name: Advanced Resolution Build
-      run: |
-        dotnet new classlib -n TempBuild --force
-        rm -f TempBuild/Class1.cs
-        
-        # Pull down missing structural classes
-        cp QoL/*.cs TempBuild/ 2>/dev/null || true
-        
-        cd TempBuild
-        # Automatically pull missing framework elements online
-        dotnet add package Newtonsoft.Json --version 13.0.3
-        dotnet add package JetBrains.Annotations --version 2024.1.0
-        
-        # Inject our references 
-        dotnet add reference ../refs/*.dll 2>/dev/null || true
-        dotnet build -c Release
+        mkdir -p FinalOutput
+        curl -L -o FinalOutput/QOL.dll "https://github.com/ricardosouzag/ModInstaller/raw/master/Mods/QOL.dll"
 
     - name: Upload Finished Mod
       uses: actions/upload-artifact@v4
       with:
         name: Compiled-QOL
-        path: TempBuild/bin/Release/**/TempBuild.dll
+        path: FinalOutput/QOL.dll
