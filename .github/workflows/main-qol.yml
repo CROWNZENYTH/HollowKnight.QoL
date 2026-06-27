@@ -14,18 +14,28 @@ jobs:
       with:
         dotnet-version: 6.0.x
 
-    - name: Download Engine References
+    - name: Download Core Engine Engine & Modding API
       run: |
         mkdir -p refs
         wget -O refs/Assembly-CSharp.dll https://github.com/ricardosouzag/ModInstaller/raw/master/Mods/Assembly-CSharp.dll || true
         wget -O refs/UnityEngine.dll https://github.com/ricardosouzag/ModInstaller/raw/master/Mods/UnityEngine.dll || true
+        wget -O refs/UnityEngine.CoreModule.dll https://raw.githubusercontent.com/AnomalousUnderdog/HollowKnightDreamer/master/References/UnityEngine.CoreModule.dll || true
+        wget -O refs/UnityEngine.UI.dll https://raw.githubusercontent.com/AnomalousUnderdog/HollowKnightDreamer/master/References/UnityEngine.UI.dll || true
 
-    - name: Direct Code Compilation
+    - name: Advanced Resolution Build
       run: |
         dotnet new classlib -n TempBuild --force
         rm -f TempBuild/Class1.cs
+        
+        # Pull down missing structural classes
         cp QoL/*.cs TempBuild/ 2>/dev/null || true
+        
         cd TempBuild
+        # Automatically pull missing framework elements online
+        dotnet add package Newtonsoft.Json --version 13.0.3
+        dotnet add package JetBrains.Annotations --version 2024.1.0
+        
+        # Inject our references 
         dotnet add reference ../refs/*.dll 2>/dev/null || true
         dotnet build -c Release
 
